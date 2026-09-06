@@ -30,5 +30,3 @@ staticfiles/
 .DS_Store
 Thumbs.db
 
-# Lock files
-*.lock
