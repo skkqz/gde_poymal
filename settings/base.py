@@ -55,15 +55,19 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+AUTH_USER_MODEL = "users.CustomUser"
+
+
 LANGUAGE_CODE = 'ru-ru'
-
-TIME_ZONE = 'UTC'
-
+TIME_ZONE = 'Europe/Moscow'
 USE_I18N = True
-
 USE_TZ = True
 
+
 STATIC_URL = 'static/'
+MEDIA_URL = 'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 
 MAILERS = {
