@@ -1,3 +1,6 @@
+from core.get_version import VERSION
+
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -15,7 +18,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'gde_poymal API',
     'DESCRIPTION': 'Сообщество рыбаков',
-    'VERSION': '1.0.0',
+    'VERSION': VERSION,
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
 }
