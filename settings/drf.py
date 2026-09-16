@@ -14,7 +14,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'gde_poymal API',
-    'DESCRIPTION': 'CRUD пользователей, далее - аутентификация',
+    'DESCRIPTION': 'Сообщество рыбаков',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'COMPONENT_SPLIT_REQUEST': True,
