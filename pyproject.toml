@@ -1,7 +1,7 @@
 [project]
 name = "gde-poymal"
 version = "0.2.0"
-description = "Add your description here"
+description = "Сообщество рыбаков"
 readme = "README.md"
 authors = [
     { name = "skkq", email = "skkqw@yandex.ru" }
