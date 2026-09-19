@@ -6,6 +6,7 @@ import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/user/', include('apps.users.api.urls')),
+    path('api/auth/', include('apps.authentication.api.urls')),
 ]
 
 # Документация только для dev режима.

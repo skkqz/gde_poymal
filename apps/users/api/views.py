@@ -1,13 +1,15 @@
 from rest_framework.viewsets import ModelViewSet
 
-from core.mixins import AtomicMixin
+from apps.users.api.schemas import user_schemas
 from apps.users.models import CustomUser
 from apps.users.api.serializers import UserSerializer
+from core.mixins import AtomicMixin
 
 
+@user_schemas
 class UserView(AtomicMixin, ModelViewSet):
     """
-    Представление пользователя. Отдает только нужные поля.
+    Представление пользователя.
     """
 
     queryset = CustomUser.objects.all()
