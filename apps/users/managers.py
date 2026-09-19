@@ -1,12 +1,14 @@
 from django.contrib.auth.base_user import BaseUserManager
 
+from apps.users.models import CustomUser
+
 
 class UserManager(BaseUserManager):
     """
     Менеджер модели пользователя.
     """
 
-    def create_user(self, email: str, password: str, **extra_fields) -> 'User':
+    def create_user(self, email: str, password: str, **extra_fields) -> CustomUser:
         """
         Создание пользователя.
         :param email: Email пользователя.
@@ -26,7 +28,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-    def create_superuser(self, email: str, password: str, **extra_fields) -> 'User':
+    def create_superuser(self, email: str, password: str, **extra_fields) -> CustomUser:
         """
         Создание суперпользователя.
 
@@ -38,6 +40,7 @@ class UserManager(BaseUserManager):
 
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_superuser', True)
 
 
         return self.create_user(email, password, **extra_fields)

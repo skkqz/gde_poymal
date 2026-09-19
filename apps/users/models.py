@@ -14,7 +14,7 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         unique=True,
         db_index=True,
-        verbose_name='Email',
+        verbose_name='Электронная почта',
     )
     first_name = models.CharField(
         max_length=255,
