@@ -5,7 +5,7 @@ from apps.users.api.serializers import UserSerializer
 
 
 register_schema = extend_schema(
-    request=serializers.ResisterSerializer,
+    request=serializers.RegisterSerializer,
     responses={201: UserSerializer},
     description='Регистрация нового пользователя. Создает пользователя и возвращает данные пользователя (без password).',
     summary='Регистрация',

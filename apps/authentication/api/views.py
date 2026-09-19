@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from apps.authentication.api.schemas import login_schema, logout_schema, me_schema, register_schema
 from apps.authentication.api.serializers import (
-    ResisterSerializer,
+    RegisterSerializer,
     LoginSerializer, LogoutSerializer,
 )
 from apps.authentication.services import JWTService
@@ -19,7 +19,7 @@ class RegisterView(GenericAPIView):
     """
 
     permission_classes = [AllowAny]
-    serializer_class = ResisterSerializer
+    serializer_class = RegisterSerializer
 
     @register_schema
     def post(self, request, *args, **kwargs):

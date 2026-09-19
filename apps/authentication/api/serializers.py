@@ -6,7 +6,7 @@ from rest_framework import serializers
 from apps.users.models import CustomUser
 
 
-class ResisterSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     """
     Сериализатор регистрации пользователя.
     """
