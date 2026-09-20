@@ -1,5 +1,3 @@
-from typing import Any
-
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -43,8 +41,24 @@ class JWTService:
         user_id_claim = api_settings.USER_ID_CLAIM
 
         if str(token.get(user_id_claim)) != str(user.pk):
-            raise ValidationError(
-                'Refresh токен принадлежит другому пользователю.',
-            )
+            raise ValidationError('Refresh токен принадлежит другому пользователю.')
 
         token.blacklist()
+
+
+class PasswordService:
+    """
+    Сервис работы с паролем пользователя.
+    """
+
+    @staticmethod
+    def change_password(user: CustomUser, new_password: str) -> None:
+        """
+        Изменение пароля пользователя.
+
+        :param user: Пользователь.
+        :param new_password: Новый пароль пользователя.
+        """
+
+        user.set_password(new_password)
+        user.save(update_fields=['password', 'updated_at', ])
