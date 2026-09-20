@@ -1,5 +1,3 @@
-"""Тесты LogoutView и MeView."""
-
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -22,9 +20,8 @@ class LogoutViewTest(APITestCase):
     def test_logout_204(self):
         """
         Успешный выход.
-
-        :return: None
         """
+
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access}')
         data = {'refresh': str(self.refresh)}
         response = self.client.post(reverse('logout'), data, format='json')
@@ -33,9 +30,8 @@ class LogoutViewTest(APITestCase):
     def test_logout_invalid_refresh_400(self):
         """
         Неверный refresh токен должен возвращать 400.
-
-        :return: None
         """
+
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access}')
         data = {'refresh': 'invalid_token'}
         response = self.client.post(reverse('logout'), data, format='json')
@@ -44,9 +40,8 @@ class LogoutViewTest(APITestCase):
     def test_logout_other_user_refresh_400(self):
         """
         Refresh токен другого пользователя должен возвращать 400.
-
-        :return: None
         """
+
         other_user = CustomUser.objects.create_user(
             email='other@example.com',
             password='StrongPass123',
@@ -61,9 +56,8 @@ class LogoutViewTest(APITestCase):
     def test_logout_without_auth_401(self):
         """
         Выход без токена должен возвращать 401.
-
-        :return: None
         """
+
         data = {'refresh': 'some_token'}
         response = self.client.post(reverse('logout'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -71,9 +65,8 @@ class LogoutViewTest(APITestCase):
     def test_logout_refresh_blacklisted(self):
         """
         После выхода refresh токен должен быть в blacklist.
-
-        :return: None
         """
+
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access}')
         data = {'refresh': str(self.refresh)}
         self.client.post(reverse('logout'), data, format='json')
