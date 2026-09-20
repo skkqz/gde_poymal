@@ -29,6 +29,7 @@ logout_schema = extend_schema(
 )
 
 password_change = extend_schema(
+    request=serializers.PasswordChangeSerializer,
     responses={200: OpenApiResponse(description='Пароль изменён')},
     description='Смена пароля пользователя.',
     summary='Смена пароля пользователя.',

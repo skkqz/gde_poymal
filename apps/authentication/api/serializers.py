@@ -1,12 +1,10 @@
 from typing import Any
 
-from django.contrib.auth.handlers.modwsgi import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
 
-from apps.users.api.schemas import user_schemas
 from apps.users.models import CustomUser
 
 
@@ -136,8 +134,8 @@ class PasswordChangeSerializer(serializers.Serializer):
     """
 
     old_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
-    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    new_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    new_password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
 
     def validate_old_password(self, value: str) -> str:
         """
@@ -176,7 +174,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         :return: Валидированные данные.
         """
 
-        if attrs['password'] != attrs['password2']:
+        if attrs['new_password'] != attrs['new_password2']:
             raise serializers.ValidationError('Новые пароли не совпадают.')
 
         return attrs

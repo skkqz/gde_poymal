@@ -3,7 +3,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from apps.authentication.api.schemas import login_schema, logout_schema, register_schema, password_change
+from apps.authentication.api import schemas
 from apps.authentication.api.serializers import (
     RegisterSerializer,
     LoginSerializer,
@@ -23,7 +23,7 @@ class RegisterView(AtomicMixin, GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = RegisterSerializer
 
-    @register_schema
+    @schemas.register_schema
     def post(self, request, *args, **kwargs):
         """
         Зарегистрировать пользователя.
@@ -48,7 +48,7 @@ class LoginView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = LoginSerializer
 
-    @login_schema
+    @schemas.login_schema
     def post(self, request, *args, **kwargs):
         """
         Авторизовать пользователя.
@@ -83,7 +83,7 @@ class LogoutView(GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = LogoutSerializer
 
-    @logout_schema
+    @schemas.logout_schema
     def post(self, request, *args, **kwargs):
         """
         Инвалидировать refresh-токен пользователя.
@@ -110,7 +110,7 @@ class PasswordChangeView(AtomicMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = PasswordChangeSerializer
 
-    @password_change
+    @schemas.password_change
     def post(self, request, *args, **kwargs):
         """
         Смена пароля.
@@ -123,6 +123,6 @@ class PasswordChangeView(AtomicMixin, GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        PasswordService.change_password(user=request.user, new_password=serializer.validated_data['password'])
+        PasswordService.change_password(user=request.user, new_password=serializer.validated_data['new_password'])
 
         return Response(status=status.HTTP_200_OK)

@@ -3,13 +3,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from apps.users.api.serializers import UserSerializer
 
 user_schemas = extend_schema_view(
-    create=extend_schema(
-        summary='Создать пользователя',
-        description='Создает нового пользователя. Доступно без токена. Пароль хешируется, не возвращается.',
-        tags=['users'],
-        request=UserSerializer,
-        responses={201: UserSerializer},
-    ),
     retrieve=extend_schema(
         summary='Профиль пользователя',
         description='Возвращает профиль по UUID. Требует JWT.',

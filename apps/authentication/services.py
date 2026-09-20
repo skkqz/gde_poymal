@@ -36,7 +36,7 @@ class JWTService:
         try:
             token = RefreshToken(refresh_token)
         except Exception as exc:
-            raise ValidationError('Некорректный refresh токен.')
+            raise ValidationError('Некорректный refresh токен.') from exc
 
         user_id_claim = api_settings.USER_ID_CLAIM
 
@@ -61,4 +61,4 @@ class PasswordService:
         """
 
         user.set_password(new_password)
-        user.save(update_fields=['password', 'updated_at', ])
+        user.save(update_fields=['password', ])

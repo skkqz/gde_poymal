@@ -37,4 +37,6 @@ class AtomicMixin:
         :return: HTTP-ответ с информацией об ошибке.
         """
         response = super().handle_exception(exc)
+        if getattr(response, 'exception') and self.request.method != "GET":
+            transaction.set_rollback(True)
         return response
