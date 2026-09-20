@@ -152,7 +152,7 @@ class PasswordChangeSerializer(serializers.Serializer):
 
         return value
 
-    def validate_password(self, value: str) -> str:
+    def validate_new_password(self, value: str) -> str:
         """
         Проверяет новый пароль согласно настройкам Django.
 
