@@ -1,3 +1,5 @@
+import os
+
 from core.models import BaseModel
 from apps.users.managers import UserManager
 
@@ -58,6 +60,50 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         db_table = '"s_accounts"."t_users"'
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def save(self, *args, **kwargs):
+        """
+        Сохранить пользователя, удалив старый аватар если он изменен.
+
+        :param args: Позиционные аргументы.
+        :param kwargs: Именованные аргументы.
+        """
+
+        if self.pk:
+            try:
+                old = CustomUser.objects.get(pk=self.pk)
+                if old.avatar and old.avatar != self.avatar:
+                    if old.avatar.name and os.path.isfile(old.avatar.path):
+                        try:
+                            os.remove(old.avatar.path)
+                        except (ValueError, OSError):
+                            pass
+                # если аватар очистили, удалить старый
+                if not self.avatar and old.avatar:
+                    if old.avatar.name and os.path.isfile(old.avatar.path):
+                        try:
+                            os.remove(old.avatar.path)
+                        except (ValueError, OSError):
+                            pass
+            except CustomUser.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """
+        Удалить пользователя вместе с файлом аватара.
+
+        :param args: Позиционные аргументы.
+        :param kwargs: Именованные аргументы.
+        """
+
+        if self.avatar and self.avatar.name:
+            try:
+                if os.path.isfile(self.avatar.path):
+                    os.remove(self.avatar.path)
+            except (ValueError, OSError):
+                pass
+        super().delete(*args, **kwargs)
 
     def __str__(self) -> str:
         """
