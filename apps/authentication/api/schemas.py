@@ -28,9 +28,9 @@ logout_schema = extend_schema(
     tags=['auth'],
 )
 
-me_schema = extend_schema(
-    responses={200: UserSerializer},
-    description='Возвращает данные текущего пользователя по JWT.',
-    summary='Мой профиль',
+password_change = extend_schema(
+    responses={200: OpenApiResponse(description='Пароль изменён')},
+    description='Смена пароля пользователя.',
+    summary='Смена пароля пользователя.',
     tags=['auth'],
 )

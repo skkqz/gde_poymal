@@ -1,8 +1,12 @@
+from typing import Any
+
+from django.contrib.auth.handlers.modwsgi import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 
 from rest_framework import serializers
 
+from apps.users.api.schemas import user_schemas
 from apps.users.models import CustomUser
 
 
@@ -124,3 +128,55 @@ class TokenPairSerializer(serializers.Serializer):
 
     access = serializers.CharField(help_text='Access токен')
     refresh = serializers.CharField(help_text='Refresh токен')
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    """
+    Сериализатор смены пароля.
+    """
+
+    old_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    def validate_old_password(self, value: str) -> str:
+        """
+        Проверяет текущий пароль пользователя.
+
+        :param value: Текущий пароль.
+        :return: Проверенный текущий пароль.
+        """
+
+        user = self.context['request'].user
+
+        if not user.check_password(value):
+            raise serializers.ValidationError('Неверно указан текущий пароль.')
+
+        return value
+
+    def validate_password(self, value: str) -> str:
+        """
+        Проверяет новый пароль согласно настройкам Django.
+
+        :param value: Новый пароль.
+        :return: Проверенный новый пароль.
+        """
+
+        user = self.context['request'].user
+
+        validate_password(password=value, user=user)
+
+        return value
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """
+        Проверяет совпадение новых паролей.
+
+        :param attrs: Валидированные поля.
+        :return: Валидированные данные.
+        """
+
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError('Новые пароли не совпадают.')
+
+        return attrs

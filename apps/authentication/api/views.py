@@ -2,14 +2,15 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from apps.authentication.api.schemas import login_schema, logout_schema, me_schema, register_schema
+from apps.authentication.api.schemas import login_schema, logout_schema, register_schema, password_change
 from apps.authentication.api.serializers import (
     RegisterSerializer,
-    LoginSerializer, LogoutSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    PasswordChangeSerializer,
 )
-from apps.authentication.services import JWTService
+from apps.authentication.services import JWTService, PasswordService
 from apps.users.api.serializers import UserSerializer
 
 
@@ -100,24 +101,27 @@ class LogoutView(GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class MeView(APIView):
+class PasswordChangeView(GenericAPIView):
     """
-    Представление получения текущего пользователя.
+    Представление смены пароля.
     """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = PasswordChangeSerializer
 
-    @me_schema
-    def get(self, request, *args, **kwargs):
+    @password_change
+    def post(self, request, *args, **kwargs):
         """
-        Вернуть данные текущего пользователя.
+        Смена пароля.
 
         :param request: HTTP запрос.
         :param args: Позиционные аргументы.
         :param kwargs: Именованные аргументы.
-        :return: Данные пользователя.
         """
 
-        serializer = UserSerializer(request.user)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        PasswordService.change_password(user=request.user, new_password=serializer.validated_data['password'])
+
+        return Response(status=status.HTTP_200_OK)
