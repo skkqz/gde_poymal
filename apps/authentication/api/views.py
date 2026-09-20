@@ -12,9 +12,10 @@ from apps.authentication.api.serializers import (
 )
 from apps.authentication.services import JWTService, PasswordService
 from apps.users.api.serializers import UserSerializer
+from core.mixins import AtomicMixin
 
 
-class RegisterView(GenericAPIView):
+class RegisterView(AtomicMixin, GenericAPIView):
     """
     Представление регистрации нового пользователя.
     """
@@ -101,7 +102,7 @@ class LogoutView(GenericAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class PasswordChangeView(GenericAPIView):
+class PasswordChangeView(AtomicMixin, GenericAPIView):
     """
     Представление смены пароля.
     """
