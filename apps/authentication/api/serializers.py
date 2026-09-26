@@ -60,7 +60,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         if password1 != password2:
             raise serializers.ValidationError('Пароли не совпадают.')
 
-        validate_password(password1, user=None)
+        temp_user = CustomUser(
+            email=attrs.get('email'),
+            first_name=attrs.get('first_name', ''),
+            last_name=attrs.get('last_name', ''),
+        )
+
+        validate_password(password1, user=temp_user)
         attrs.pop('password2')
 
         return attrs

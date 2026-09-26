@@ -1,4 +1,5 @@
 from rest_framework.exceptions import ValidationError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -31,11 +32,12 @@ class JWTService:
         """
         Добавление refresh токена в blacklist.
 
+        :param user: Пользователь.
         :param refresh_token: Refresh токен.
         """
         try:
             token = RefreshToken(refresh_token)
-        except Exception as exc:
+        except TokenError as exc:
             raise ValidationError('Некорректный refresh токен.') from exc
 
         user_id_claim = api_settings.USER_ID_CLAIM
@@ -61,4 +63,4 @@ class PasswordService:
         """
 
         user.set_password(new_password)
-        user.save(update_fields=['password', ])
+        user.save(update_fields=['password', 'updated_at', ])

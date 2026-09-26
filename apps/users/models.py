@@ -113,4 +113,3 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         """
 
         return str(self.email)
-
