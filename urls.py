@@ -10,7 +10,7 @@ urlpatterns = [
 ]
 
 # Документация только для dev режима.
-if settings.DEBUG:
+if not settings.DEBUG:
     from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
     urlpatterns += [

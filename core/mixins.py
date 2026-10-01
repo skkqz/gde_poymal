@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 from rest_framework import permissions
 
 
@@ -40,3 +42,27 @@ class AtomicMixin:
         if getattr(response, 'exception') and self.request.method != "GET":
             transaction.set_rollback(True)
         return response
+
+
+class CsrfProtectMixin:
+    """
+    Включает CSRF-проверку для DRF-view.
+
+    DRF по умолчанию освобождает все APIView от CsrfViewMiddleware
+    (as_view() оборачивает view в csrf_exempt). Этот миксин
+    возвращает защиту для эндпоинтов, которые аутентифицируются
+    cookie без Authorization-заголовка: refresh, logout и любые
+    другие state-changing операции.
+    """
+
+    @method_decorator(csrf_protect, name='dispatch')
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Проверить CSRF-токен перед обработкой запроса.
+
+        :param request: HTTP запрос.
+        :param args: Позиционные аргументы.
+        :param kwargs: Именованные аргументы.
+        :return: Ответ представления либо 403 при невалидном CSRF-токене.
+        """
+        return super().dispatch(request, *args, **kwargs)

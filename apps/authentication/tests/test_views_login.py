@@ -1,12 +1,15 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import CustomUser
 
 
 class LoginViewTest(APITestCase):
     """Тесты LoginView."""
+
+    cookie_name = 'refresh_token'
 
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -16,7 +19,7 @@ class LoginViewTest(APITestCase):
 
     def test_login_200(self):
         """
-        Успешный вход.
+        Успешный вход: access в теле ответа, refresh только в cookie.
         """
 
         data = {
@@ -26,7 +29,31 @@ class LoginViewTest(APITestCase):
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
-        self.assertIn('refresh', response.data)
+        self.assertIn('user', response.data)
+        self.assertNotIn('refresh', response.data)
+
+    def test_login_sets_httponly_refresh_cookie(self):
+        """
+        Refresh-токен должен устанавливаться в защищённую HttpOnly cookie.
+        """
+
+        data = {
+            'email': 'test@example.com',
+            'password': 'StrongPass123',
+        }
+        response = self.client.post(reverse('login'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.cookie_name, response.cookies)
+
+        cookie = response.cookies[self.cookie_name]
+        self.assertTrue(cookie['httponly'])
+        self.assertEqual(cookie['path'], '/api/auth/')
+        self.assertEqual(cookie['samesite'], 'Lax')
+
+        # Значение cookie должно быть валидным refresh-токеном этого пользователя.
+        token = RefreshToken(cookie.value)
+        self.assertEqual(str(token['user_id']), str(self.user.pk))
 
     def test_login_wrong_password_400(self):
         """
