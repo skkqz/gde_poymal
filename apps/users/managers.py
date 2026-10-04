@@ -1,6 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
 
-from apps.users.models import CustomUser
 
 
 class UserManager(BaseUserManager):
@@ -8,7 +7,7 @@ class UserManager(BaseUserManager):
     Менеджер модели пользователя.
     """
 
-    def create_user(self, email: str, password: str, **extra_fields) -> CustomUser:
+    def create_user(self, email: str, password: str, **extra_fields) -> 'CustomUser':
         """
         Создание пользователя.
         :param email: Email пользователя.
@@ -18,9 +17,9 @@ class UserManager(BaseUserManager):
         """
 
         if not email:
-            raise ValueError('Email обязателен для создания пользователя')
+            raise ValueError('Электронная почта обязательна для создания пользователя')
 
-        email = self.normalize_email(email)
+        email = self.normalize_email(email).lower()
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
@@ -28,7 +27,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-    def create_superuser(self, email: str, password: str, **extra_fields) -> CustomUser:
+    def create_superuser(self, email: str, password: str, **extra_fields) -> 'CustomUser':
         """
         Создание суперпользователя.
 
@@ -41,6 +40,14 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_active', True)
         extra_fields.setdefault('is_superuser', True)
+
+        if not extra_fields.get('is_staff'):
+            raise ValueError('Суперпользователь должен иметь is_staff=True')
+
+        if not extra_fields.get('is_superuser'):
+            raise ValueError(
+                'Суперпользователь должен иметь is_superuser=True',
+            )
 
 
         return self.create_user(email, password, **extra_fields)
