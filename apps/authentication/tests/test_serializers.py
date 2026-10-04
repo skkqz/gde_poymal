@@ -4,8 +4,6 @@ from apps.users.models import CustomUser
 from apps.authentication.api.serializers import (
     RegisterSerializer,
     LoginSerializer,
-    LogoutSerializer,
-    TokenPairSerializer,
 )
 
 
@@ -149,43 +147,3 @@ class LoginSerializerTest(TestCase):
         serializer = LoginSerializer(data=data, context={'request': None})
         self.assertTrue(serializer.is_valid(), serializer.errors)
         self.assertEqual(serializer.validated_data['user'], self.user)
-
-
-class LogoutSerializerTest(TestCase):
-    """Тесты LogoutSerializer."""
-
-    def test_valid_refresh(self):
-        """
-        Валидный refresh токен.
-        """
-
-        data = {'refresh': 'some_refresh_token'}
-        serializer = LogoutSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data['refresh'], 'some_refresh_token')
-
-    def test_missing_refresh_raises(self):
-        """
-        Отсутствие refresh токена должно вызывать ошибку.
-        """
-
-        serializer = LogoutSerializer(data={})
-        self.assertFalse(serializer.is_valid())
-        self.assertIn('refresh', serializer.errors)
-
-
-class TokenPairSerializerTest(TestCase):
-    """Тесты TokenPairSerializer."""
-
-    def test_serialization(self):
-        """
-        Сериализация пары токенов.
-        """
-
-        data = {
-            'access': 'access_token_string',
-            'refresh': 'refresh_token_string',
-        }
-        serializer = TokenPairSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data, data)

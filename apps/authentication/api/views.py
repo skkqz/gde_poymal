@@ -7,7 +7,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -40,6 +39,7 @@ class CsrfTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
 
+    @schemas.csrf_schema
     def get(self, request, *args, **kwargs):
         """
         Установить CSRF-cookie в ответе.
@@ -98,6 +98,7 @@ class RegisterView(AtomicMixin, GenericAPIView):
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
+
 class LoginView(GenericAPIView):
     """
     Представление авторизации пользователя.
@@ -149,7 +150,7 @@ class LoginView(GenericAPIView):
         return response
 
 
-class CookieTokenRefreshView(CsrfProtectMixin, TokenRefreshView):
+class CookieTokenRefreshView(CsrfProtectMixin, GenericAPIView):
     """
     Обновление access-токена.
 
@@ -164,8 +165,26 @@ class CookieTokenRefreshView(CsrfProtectMixin, TokenRefreshView):
     CsrfProtectMixin.
     """
 
+    permission_classes = [AllowAny]
+    authentication_classes = []
     serializer_class = TokenRefreshSerializer
 
+    def get_authenticate_header(self, request):
+        """
+        Вернуть заголовок WWW-Authenticate для 401-ответов.
+
+        DRF в handle_exception превращает 401 в 403, если view не
+        предоставляет заголовок аутентификации. Возвращаем тот же
+        заголовок, что отдавал TokenRefreshView из SimpleJWT, чтобы
+        невалидный refresh давал 401, а не 403.
+
+        :param request: HTTP запрос.
+        :return: Значение заголовка WWW-Authenticate.
+        """
+
+        return 'Bearer realm="api"'
+
+    @schemas.refresh_schema
     def post(self, request, *args, **kwargs):
         """
         Обновить access-токен по refresh-токену из cookie.

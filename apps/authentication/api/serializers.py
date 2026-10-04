@@ -119,19 +119,14 @@ class LoginSerializer(serializers.Serializer):
         return attrs
 
 
-class LogoutSerializer(serializers.Serializer):
+class AccessTokenResponse(serializers.Serializer):
     """
-    Сериализатор выхода пользователя.
+    Ответ с access-токеном.
+
+    Refresh-токен в теле не возвращается: он живёт в HttpOnly cookie.
     """
 
-    refresh = serializers.CharField(write_only=True)
-
-
-class TokenPairSerializer(serializers.Serializer):
-    """Ответ с JWT парой."""
-
-    access = serializers.CharField(help_text='Access токен')
-    refresh = serializers.CharField(help_text='Refresh токен')
+    access = serializers.CharField(help_text='Access-токен, хранить в памяти клиента')
 
 
 class PasswordChangeSerializer(serializers.Serializer):
