@@ -1,7 +1,7 @@
-from django.test import TestCase, RequestFactory
+from django.test import RequestFactory, TestCase
 from rest_framework import status
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.mixins import AtomicMixin
 
@@ -30,7 +30,7 @@ class ErrorAtomicView(AtomicMixin, APIView):
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
-        raise ValueError("test error")
+        raise ValueError('test error')
 
 
 class AtomicMixinTest(TestCase):

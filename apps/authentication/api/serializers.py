@@ -1,8 +1,7 @@
 from typing import Any
 
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
-
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from apps.users.models import CustomUser
@@ -40,9 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         value = value.strip().lower()
 
         if CustomUser.objects.filter(email__iexact=value).exists():
-            raise serializers.ValidationError(
-                'Пользователь с такой электронной почтой уже существует.'
-            )
+            raise serializers.ValidationError('Пользователь с такой электронной почтой уже существует.')
 
         return value
 
@@ -110,9 +107,7 @@ class LoginSerializer(serializers.Serializer):
         )
 
         if user is None:
-            raise serializers.ValidationError(
-                'Не верная электронная почта или пароль.'
-            )
+            raise serializers.ValidationError('Не верная электронная почта или пароль.')
 
         attrs['user'] = user
 

@@ -1,4 +1,5 @@
 from datetime import timedelta
+
 from .base import env
 
 SIMPLE_JWT = {
@@ -7,7 +8,6 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
-
     # Настройки Cookie
     'AUTH_COOKIE': 'refresh_token',  # имя cookie для refresh
     'AUTH_COOKIE_SECURE': not env.bool('DEBUG', default=False),  # True в проде

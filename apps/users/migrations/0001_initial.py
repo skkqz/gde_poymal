@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -21,22 +20,52 @@ class Migration(migrations.Migration):
             name='CustomUser',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('email', models.EmailField(db_index=True, max_length=254, unique=True, verbose_name='Электронная почта')),
-
+                (
+                    'email',
+                    models.EmailField(db_index=True, max_length=254, unique=True, verbose_name='Электронная почта'),
+                ),
                 ('password', models.CharField(max_length=128, verbose_name='Пароль')),
                 ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='Последний вход')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Обозначает, что пользователь имеет все права без их явного назначения.', verbose_name='Статус суперпользователя')),
-
+                (
+                    'is_superuser',
+                    models.BooleanField(
+                        default=False,
+                        help_text='Обозначает, что пользователь имеет все права без их явного назначения.',
+                        verbose_name='Статус суперпользователя',
+                    ),
+                ),
                 ('first_name', models.CharField(max_length=255, verbose_name='Имя')),
                 ('last_name', models.CharField(max_length=255, verbose_name='Фамилия')),
                 ('birth_date', models.DateField(blank=True, null=True, verbose_name='Дата рождения')),
-                ('is_email_verified', models.BooleanField(default=False, verbose_name='Электронная почта подтверждена')),
-
+                (
+                    'is_email_verified',
+                    models.BooleanField(default=False, verbose_name='Электронная почта подтверждена'),
+                ),
                 ('avatar', models.ImageField(blank=True, null=True, upload_to='users/avatars/', verbose_name='Аватар')),
                 ('is_active', models.BooleanField(default=True, verbose_name='Активен')),
                 ('is_staff', models.BooleanField(default=False, verbose_name='Персонал')),
-                ('groups', models.ManyToManyField(blank=True, help_text='Группы, к которым принадлежит пользователь. Пользователь получит все права, назначенные каждой из его групп.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='Группы')),
-                ('user_permissions', models.ManyToManyField(blank=True, help_text='Конкретные права для этого пользователя.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='Права пользователя')),
+                (
+                    'groups',
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text='Группы, к которым принадлежит пользователь. Пользователь получит все права, назначенные каждой из его групп.',
+                        related_name='user_set',
+                        related_query_name='user',
+                        to='auth.group',
+                        verbose_name='Группы',
+                    ),
+                ),
+                (
+                    'user_permissions',
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text='Конкретные права для этого пользователя.',
+                        related_name='user_set',
+                        related_query_name='user',
+                        to='auth.permission',
+                        verbose_name='Права пользователя',
+                    ),
+                ),
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Дата изменения')),
             ],

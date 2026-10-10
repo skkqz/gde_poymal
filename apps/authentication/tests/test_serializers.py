@@ -1,10 +1,10 @@
 from django.test import TestCase
 
-from apps.users.models import CustomUser
 from apps.authentication.api.serializers import (
-    RegisterSerializer,
     LoginSerializer,
+    RegisterSerializer,
 )
+from apps.users.models import CustomUser
 
 
 class RegisterSerializerTest(TestCase):

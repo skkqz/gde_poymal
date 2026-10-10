@@ -1,12 +1,10 @@
-import os
-
-from apps.users.services.path_avatar import user_avatar_upload_to
-from core.models import BaseModel
-from apps.users.managers import UserManager
-
-from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.db import models
+
+from apps.users.managers import UserManager
+from apps.users.services.path_avatar import user_avatar_upload_to
+from core.models import BaseModel
 
 
 class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):

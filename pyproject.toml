@@ -1,6 +1,6 @@
 [project]
 name = "gde-poymal"
-version = "0.3.0"
+version = "0.4.0"
 description = "Сообщество рыбаков"
 readme = "README.md"
 authors = [
@@ -25,3 +25,48 @@ dev = [
     "factory-boy>=3.3.3",
     "ruff>=0.16.6",
 ]
+
+[tool.ruff]
+target-version = "py313"
+# 120: код укладывается (3100+ строк ≤88), а длинные строки остаются
+# заметными. Тот же лимит потом подхватит форматтер.
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle: синтаксические ошибки стиля
+    "F",   # pyflakes: неиспользуемые импорты, undefined-имена
+    "I",   # isort: порядок импортов
+    "UP",  # pyupgrade: старый синтаксис под Python 3.13
+    "B",   # flake8-bugbear: подозрительный код
+    "DTZ", # tz-aware даты (в проекте USE_TZ=True)
+    "RUF", # собственные правила ruff
+]
+ignore = [
+    # Изменяемые атрибуты класса — идиома Django/DRF
+    # (permission_classes, authentication_classes, Meta.fields).
+    "RUF012",
+    # Проект на русском языке: правила confusables рассчитаны
+    # на английский текст и считают кириллицу подозрительной.
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.isort]
+# Явное разделение своих и чужих импортов: django/rest_framework —
+# third-party, apps/core/settings — first-party.
+known-first-party = ["apps", "core", "settings"]
+
+[tool.ruff.lint.per-file-ignores]
+# Миграции генерирует Django — руками не правим.
+"apps/*/migrations/*.py" = ["I001", "E501"]
+# Порядок импортов здесь = приоритет настроек, менять нельзя;
+# star-импорты — штатный механизм сборки настроек в один модуль.
+"settings/__init__.py" = ["I001", "F403"]
+
+[tool.ruff.format]
+# Форматтер пока НЕ запускать. Когда запустим — одинарные кавычки
+# как в кодовой базе, окончания строк файлов не трогать.
+quote-style = "single"
+line-ending = "auto"

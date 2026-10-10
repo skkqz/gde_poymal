@@ -1,8 +1,8 @@
 from rest_framework.viewsets import ModelViewSet
 
 from apps.users.api.schemas import user_schemas
-from apps.users.models import CustomUser
 from apps.users.api.serializers import UserSerializer
+from apps.users.models import CustomUser
 from apps.users.permissions import IsOwnerOrAdmin
 from core.mixins import AtomicMixin
 
@@ -16,6 +16,3 @@ class UserView(AtomicMixin, ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsOwnerOrAdmin]
-
-
-

@@ -24,7 +24,7 @@ class AtomicMixin:
         :param kwargs: Именованные аргументы маршрута.
         :return: HTTP-ответ от родительского dispatch.
         """
-        if request.method in permissions.SAFE_METHODS: # GET, HEAD, OPTIONS
+        if request.method in permissions.SAFE_METHODS:  # GET, HEAD, OPTIONS
             return super().dispatch(request, *args, **kwargs)
         with transaction.atomic():
             return super().dispatch(request, *args, **kwargs)
@@ -39,7 +39,7 @@ class AtomicMixin:
         :return: HTTP-ответ с информацией об ошибке.
         """
         response = super().handle_exception(exc)
-        if getattr(response, 'exception') and self.request.method != "GET":
+        if response.exception and self.request.method != 'GET':
             transaction.set_rollback(True)
         return response
 

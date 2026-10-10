@@ -1,13 +1,12 @@
 from django.contrib.auth.base_user import BaseUserManager
 
 
-
 class UserManager(BaseUserManager):
     """
     Менеджер модели пользователя.
     """
 
-    def create_user(self, email: str, password: str, **extra_fields) -> 'CustomUser':
+    def create_user(self, email: str, password: str, **extra_fields) -> 'CustomUser':  # noqa: F821 — имя резолвится вызывающим кодом, прямой импорт даст цикл с models
         """
         Создание пользователя.
         :param email: Email пользователя.
@@ -26,8 +25,7 @@ class UserManager(BaseUserManager):
 
         return user
 
-
-    def create_superuser(self, email: str, password: str, **extra_fields) -> 'CustomUser':
+    def create_superuser(self, email: str, password: str, **extra_fields) -> 'CustomUser':  # noqa: F821 — имя резолвится вызывающим кодом, прямой импорт даст цикл с models
         """
         Создание суперпользователя.
 
@@ -48,6 +46,5 @@ class UserManager(BaseUserManager):
             raise ValueError(
                 'Суперпользователь должен иметь is_superuser=True',
             )
-
 
         return self.create_user(email, password, **extra_fields)

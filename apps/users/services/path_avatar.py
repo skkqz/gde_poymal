@@ -1,4 +1,4 @@
-def user_avatar_upload_to(instance: 'CustomUser', filename: str) -> str:
+def user_avatar_upload_to(instance: 'CustomUser', filename: str) -> str:  # noqa: F821 — имя резолвится вызывающим кодом, прямой импорт даст цикл с models
     """
     Сформировать путь загрузки аватара пользователя. users/avatars/<uuid-пользователя>/<файл>
 

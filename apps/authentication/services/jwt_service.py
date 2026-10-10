@@ -1,13 +1,12 @@
+from loguru import logger
 from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
     OutstandingToken,
 )
-
-from loguru import logger
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.users.models import CustomUser
 
@@ -31,8 +30,7 @@ class JWTService:
             token = RefreshToken(refresh_token)
         except TokenError as exc:
             logger.warning(
-                f'Блэклист отклонён: невалидный refresh-токен '
-                f'(user_id={user.pk}, ошибка={exc})',
+                f'Блэклист отклонён: невалидный refresh-токен (user_id={user.pk}, ошибка={exc})',
             )
             raise ValidationError('Некорректный refresh токен.') from exc
 
