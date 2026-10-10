@@ -1,6 +1,8 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.core.files.images import get_image_dimensions
+from django.core.files.uploadedfile import UploadedFile
+from django.templatetags.static import static
 from django.utils import timezone
 
 from rest_framework import serializers
@@ -16,17 +18,34 @@ MAX_USER_AGE = timedelta(days=150 * 365)
 
 class AbsoluteImageField(serializers.ImageField):
     """
-    ImageField с абсолютным URL и fallback при DisallowedHost.
+    ImageField с абсолютным URL.
+
+    Если файл отсутствует, отдаёт URL стандартной аватарки
+    из static. Fallback при DisallowedHost — относительный URL.
     """
 
-    def to_representation(self, value):
-        if not value:
-            return None
+    def to_representation(self, value) -> str | None:
+        """
+        Преобразовать файл в абсолютный URL.
+
+        :param value: Поле файла модели или None, если файл отсутствует.
+        :return: Абсолютный URL файла, URL стандартной аватарки либо None,
+            если URL построить нельзя.
+        """
+
+        request = self.context.get('request')
+        if not value or not getattr(value, 'name', None):
+            url = static('images/default-avatar.png')
+            if request is not None:
+                try:
+                    return request.build_absolute_uri(url)
+                except Exception:
+                    return url
+            return url
         try:
             url = value.url
         except Exception:
             return None
-        request = self.context.get('request')
         if request is not None:
             try:
                 return request.build_absolute_uri(url)
@@ -47,9 +66,16 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id', 'email', 'first_name', 'last_name', 'birth_date', 'avatar', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'created_at', 'updated_at']
         extra_kwargs = {
-            'first_name': {'required': False, 'allow_blank': True},
-            'last_name': {'required': False, 'allow_blank': True},
+            'first_name': {
+                'required': False,
+                'error_messages': {'blank': 'Имя не может быть пустым.'},
+            },
+            'last_name': {
+                'required': False,
+                'error_messages': {'blank': 'Фамилия не может быть пустой.'},
+            },
         }
 
     def validate_first_name(self, value: str) -> str:
@@ -84,7 +110,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_birth_date(self, value):
+    def validate_birth_date(self, value: date | None) -> date | None:
         """
         Проверить реалистичность даты рождения.
 
@@ -106,7 +132,7 @@ class UserSerializer(serializers.ModelSerializer):
 
         return value
 
-    def validate_avatar(self, value):
+    def validate_avatar(self, value: UploadedFile | None) -> UploadedFile | None:
         """
         Проверить размер и габариты загружаемого аватара.
 

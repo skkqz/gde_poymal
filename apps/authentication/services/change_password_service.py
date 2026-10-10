@@ -1,5 +1,6 @@
 from loguru import logger
 
+from apps.authentication.services.jwt_service import JWTService
 from apps.users.models import CustomUser
 
 
@@ -19,6 +20,8 @@ class PasswordService:
 
         user.set_password(new_password)
         user.save(update_fields=['password', 'updated_at'])
+
+        JWTService.revoke_all_refresh_tokens(user)
 
         logger.debug(
             f'Пароль пользователя обновлён в БД (user_id={user.pk})',
