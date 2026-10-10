@@ -1,5 +1,6 @@
 import os
 
+from apps.users.services.path_avatar import user_avatar_upload_to
 from core.models import BaseModel
 from apps.users.managers import UserManager
 
@@ -32,7 +33,7 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         verbose_name='Дата рождения',
     )
     avatar = models.ImageField(
-        upload_to='users/avatars/',
+        upload_to=user_avatar_upload_to,
         null=True,
         blank=True,
         verbose_name='Аватар',
@@ -69,25 +70,23 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         :param kwargs: Именованные аргументы.
         """
 
+        old_avatar_name = None
+
         if self.pk:
             try:
                 old = CustomUser.objects.get(pk=self.pk)
-                if old.avatar and old.avatar != self.avatar:
-                    if old.avatar.name and os.path.isfile(old.avatar.path):
-                        try:
-                            os.remove(old.avatar.path)
-                        except (ValueError, OSError):
-                            pass
-                # если аватар очистили, удалить старый
-                if not self.avatar and old.avatar:
-                    if old.avatar.name and os.path.isfile(old.avatar.path):
-                        try:
-                            os.remove(old.avatar.path)
-                        except (ValueError, OSError):
-                            pass
+                if old.avatar and old.avatar.name != (self.avatar.name if self.avatar else None):
+                    old_avatar_name = old.avatar.name
             except CustomUser.DoesNotExist:
-                pass
+                old_avatar_name = None
+
         super().save(*args, **kwargs)
+
+        if old_avatar_name:
+            try:
+                self.avatar.storage.delete(old_avatar_name)
+            except Exception:
+                pass
 
     def delete(self, *args, **kwargs):
         """
@@ -97,13 +96,13 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         :param kwargs: Именованные аргументы.
         """
 
-        if self.avatar and self.avatar.name:
-            try:
-                if os.path.isfile(self.avatar.path):
-                    os.remove(self.avatar.path)
-            except (ValueError, OSError):
-                pass
+        avatar_name = self.avatar.name if self.avatar else None
         super().delete(*args, **kwargs)
+        if avatar_name:
+            try:
+                self.avatar.storage.delete(avatar_name)
+            except Exception:
+                pass
 
     def __str__(self) -> str:
         """

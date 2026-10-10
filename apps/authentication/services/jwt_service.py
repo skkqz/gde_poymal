@@ -2,6 +2,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.settings import api_settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 
 from loguru import logger
 
@@ -47,3 +51,29 @@ class JWTService:
         logger.debug(
             f'Refresh-токен добавлен в блэклист (user_id={user.pk})',
         )
+
+    @staticmethod
+    def revoke_all_refresh_tokens(user: CustomUser) -> int:
+        """
+        Добавить в blacklist все выпущенные refresh-токены пользователя.
+
+        Вызывается при смене пароля: старые сессии должны умереть вместе
+        со старым паролем, иначе смена пароля не защищает от компрометации.
+
+        :param user: Пользователь.
+        :return: Количество вновь забаненных токенов.
+        """
+
+        revoked = 0
+        outstanding = OutstandingToken.objects.filter(user=user)
+
+        for token in outstanding:
+            _, created = BlacklistedToken.objects.get_or_create(token=token)
+            if created:
+                revoked += 1
+
+        logger.debug(
+            f'Отозваны refresh-токены пользователя (user_id={user.pk}, count={revoked})',
+        )
+
+        return revoked
