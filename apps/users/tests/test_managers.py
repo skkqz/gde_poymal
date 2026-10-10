@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.test import TestCase
 
 from apps.users.models import CustomUser
@@ -55,7 +56,7 @@ class UserManagerTest(TestCase):
             email='duplicate@example.com',
             password='StrongPass123',
         )
-        with self.assertRaises(Exception):  # IntegrityError
+        with self.assertRaises(IntegrityError):
             CustomUser.objects.create_user(
                 email='duplicate@example.com',
                 password='AnotherPass123',

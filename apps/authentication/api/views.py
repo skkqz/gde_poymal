@@ -1,5 +1,5 @@
 from django.middleware.csrf import get_token
-
+from loguru import logger
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import GenericAPIView
@@ -10,18 +10,15 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from loguru import logger
-
 from apps.authentication.api import schemas
 from apps.authentication.api.serializers import (
-    RegisterSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
+    RegisterSerializer,
 )
 from apps.authentication.services.change_password_service import PasswordService
 from apps.authentication.services.jwt_service import JWTService
 from apps.authentication.services.refresh_cookie_service import RefreshCookieService
-
 from apps.users.api.serializers import UserSerializer
 from core.mixins import AtomicMixin, CsrfProtectMixin
 
@@ -98,7 +95,6 @@ class RegisterView(AtomicMixin, GenericAPIView):
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
-
 class LoginView(GenericAPIView):
     """
     Представление авторизации пользователя.
@@ -143,8 +139,7 @@ class LoginView(GenericAPIView):
         RefreshCookieService.set(response, str(refresh))
 
         logger.info(
-            f'Пользователь авторизован: id={user.pk} email={user.email} '
-            f'ip={request.META.get("REMOTE_ADDR")}',
+            f'Пользователь авторизован: id={user.pk} email={user.email} ip={request.META.get("REMOTE_ADDR")}',
         )
 
         return response
@@ -200,8 +195,7 @@ class CookieTokenRefreshView(CsrfProtectMixin, GenericAPIView):
 
         if not refresh_token:
             logger.warning(
-                f'Refresh не выполнен: refresh-cookie отсутствует '
-                f'(ip={request.META.get("REMOTE_ADDR")})',
+                f'Refresh не выполнен: refresh-cookie отсутствует (ip={request.META.get("REMOTE_ADDR")})',
             )
             return Response(
                 {'detail': 'Refresh-токен не найден.'},
@@ -272,8 +266,7 @@ class LogoutView(CsrfProtectMixin, GenericAPIView):
                     refresh_token=refresh_token,
                 )
                 logger.info(
-                    f'Пользователь вышел из системы: '
-                    f'id={request.user.pk} email={request.user.email}',
+                    f'Пользователь вышел из системы: id={request.user.pk} email={request.user.email}',
                 )
             except ValidationError as exc:
                 # Токен уже использован, просрочен или в блэклисте.
@@ -326,8 +319,7 @@ class PasswordChangeView(AtomicMixin, GenericAPIView):
         )
 
         logger.info(
-            f'Пользователь сменил пароль: '
-            f'id={request.user.pk} email={request.user.email}',
+            f'Пользователь сменил пароль: id={request.user.pk} email={request.user.email}',
         )
 
         return Response(status=status.HTTP_200_OK)

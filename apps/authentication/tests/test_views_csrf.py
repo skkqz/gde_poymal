@@ -1,6 +1,5 @@
 from django.test import override_settings
 from django.urls import reverse
-
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -71,15 +70,23 @@ class CSRFTokenViewTest(APITestCase):
         """
 
         cases = (
-            ('login', {
-                'email': 'test@example.com',
-                'password': 'StrongPass123',
-            }, status.HTTP_200_OK),
-            ('register', {
-                'email': 'new@example.com',
-                'password': 'StrongPass123',
-                'password2': 'StrongPass123',
-            }, status.HTTP_201_CREATED),
+            (
+                'login',
+                {
+                    'email': 'test@example.com',
+                    'password': 'StrongPass123',
+                },
+                status.HTTP_200_OK,
+            ),
+            (
+                'register',
+                {
+                    'email': 'new@example.com',
+                    'password': 'StrongPass123',
+                    'password2': 'StrongPass123',
+                },
+                status.HTTP_201_CREATED,
+            ),
         )
 
         for url_name, payload, expected_status in cases:

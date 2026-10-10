@@ -4,11 +4,9 @@ from django.core.files.images import get_image_dimensions
 from django.core.files.uploadedfile import UploadedFile
 from django.templatetags.static import static
 from django.utils import timezone
-
 from rest_framework import serializers
 
 from apps.users.models import CustomUser
-
 
 MAX_AVATAR_SIZE = 5 * 1024 * 1024
 MAX_AVATAR_WIDTH = 4096

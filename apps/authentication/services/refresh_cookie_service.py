@@ -2,10 +2,9 @@ from typing import Any
 
 from django.conf import settings
 from django.http import HttpRequest
+from loguru import logger
 from rest_framework.response import Response
 from rest_framework_simplejwt.settings import api_settings
-
-from loguru import logger
 
 
 class RefreshCookieService:
@@ -53,9 +52,7 @@ class RefreshCookieService:
         )
 
         logger.debug(
-            f'Refresh-cookie установлена '
-            f'(name={cls._config("AUTH_COOKIE")}, '
-            f'path={cls._config("AUTH_COOKIE_PATH")})',
+            f'Refresh-cookie установлена (name={cls._config("AUTH_COOKIE")}, path={cls._config("AUTH_COOKIE_PATH")})',
         )
 
     @classmethod

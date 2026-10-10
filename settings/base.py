@@ -1,7 +1,7 @@
 import os
-import environ
-
 from pathlib import Path
+
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -35,9 +35,7 @@ ROOT_URLCONF = 'urls'
 WSGI_APPLICATION = 'wsgi.application'
 
 
-DATABASES = {
-    'default': env.db('DATABASE_URL', 'postgresql://user:password@localhost:5432/db_name')
-}
+DATABASES = {'default': env.db('DATABASE_URL', 'postgresql://user:password@localhost:5432/db_name')}
 
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -45,7 +43,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', 'OPTIONS': {'min_length': 6},
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 6},
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
