@@ -49,6 +49,40 @@ class CustomUser(BaseModel, AbstractBaseUser, PermissionsMixin):
         verbose_name='Email подтвержден',
     )
 
+    password = models.CharField(
+        max_length=128,
+        verbose_name='Пароль',
+    )
+    last_login = models.DateTimeField(
+        blank=True,
+        null=True,
+        verbose_name='Последний вход',
+    )
+    is_superuser = models.BooleanField(
+        default=False,
+        verbose_name='Суперпользователь',
+        help_text='Обозначает, что пользователь имеет все права без их явного назначения.',
+    )
+    groups = models.ManyToManyField(
+        'auth.Group',
+        blank=True,
+        verbose_name='Группы',
+        help_text=(
+            'Группы, к которым принадлежит пользователь. '
+            'Пользователь получит все права, предоставленные каждой из его групп.'
+        ),
+        related_name='user_set',
+        related_query_name='user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        blank=True,
+        verbose_name='Права пользователя',
+        help_text='Конкретные права этого пользователя.',
+        related_name='user_set',
+        related_query_name='user',
+    )
+
     USERNAME_FIELD = 'email'
 
     REQUIRED_FIELDS = []
