@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer, OpenApiParameter
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, inline_serializer
 from rest_framework import serializers as drf_serializers
 
 from apps.authentication.api import serializers
@@ -105,7 +105,7 @@ resend_verification_schema = extend_schema(
         400: OpenApiResponse(description='Email уже подтверждён'),
     },
     description='Повторная отправка письма подтверждения email. Требует JWT. '
-                'Инвалидирует предыдущий токен и отправляет новый.',
+    'Инвалидирует предыдущий токен и отправляет новый.',
     summary='Повторная отправка письма подтверждения',
     tags=['auth'],
 )

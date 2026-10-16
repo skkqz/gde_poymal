@@ -5,12 +5,10 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import strip_tags
-
 from loguru import logger
 
 from apps.authentication.models import EmailVerificationToken
 from apps.users.models import CustomUser
-
 
 TOKEN_EXPIRY_HOURS = 24  # Время жизни токена в часах
 TOKEN_LENGTH = 64  # Длина токена в символах
@@ -54,19 +52,19 @@ class EmailVerificationService:
         :param user: Пользователь.
         :param token: Токен подтверждения.
         """
-        subject = "Подтвердите email — Где поймал?"
+        subject = 'Подтвердите email — Где поймал?'
 
         # Ссылка: пока localhost для локальной отладки. На сервере (Astra Linux) замени на реальный домен
-        verify_url = f"http://localhost:3000/verify-email?token={token.token}"
+        verify_url = f'http://localhost:3000/verify-email?token={token.token}'
 
         context = {
-            "user": user,
-            "token": token.token,
-            "expiry_hours": TOKEN_EXPIRY_HOURS,
-            "verify_url": verify_url,
+            'user': user,
+            'token': token.token,
+            'expiry_hours': TOKEN_EXPIRY_HOURS,
+            'verify_url': verify_url,
         }
 
-        html_message = render_to_string("authentication/email_verification.html", context)
+        html_message = render_to_string('authentication/email_verification.html', context)
         plain_message = strip_tags(html_message)
 
         try:
@@ -78,13 +76,9 @@ class EmailVerificationService:
                 html_message=html_message,  # HTML-версия (именно сюда!)
                 fail_silently=False,  # для отладки: чтобы видеть ошибки SMTP
             )
-            logger.debug(
-                f"Письмо подтверждения отправлено (user_id={user.pk}, email={user.email})"
-            )
+            logger.debug(f'Письмо подтверждения отправлено (user_id={user.pk}, email={user.email})')
         except Exception as e:
-            logger.exception(
-                f"Не удалось отправить письмо подтверждения (user_id={user.pk}, email={user.email}): {e}"
-            )
+            logger.exception(f'Не удалось отправить письмо подтверждения (user_id={user.pk}, email={user.email}): {e}')
             raise
 
     @staticmethod
@@ -99,9 +93,9 @@ class EmailVerificationService:
 
         try:
             token = EmailVerificationToken.objects.get(token=token_str)
-        except EmailVerificationToken.DoesNotExist:
+        except EmailVerificationToken.DoesNotExist as err:
             logger.warning(f'Токен подтверждения не найден: {token_str[:16]}...')
-            raise ValueError('Токен не найден')
+            raise ValueError('Токен не найден') from err
 
         if token.used:
             logger.warning(
