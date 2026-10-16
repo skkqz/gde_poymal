@@ -52,7 +52,7 @@ class RefreshCookieService:
         )
 
         logger.debug(
-            f'Refresh-cookie установлена (name={cls._config("AUTH_COOKIE")}, path={cls._config("AUTH_COOKIE_PATH")})',
+            f'Refresh-cookie установлен (name={cls._config("AUTH_COOKIE")}, path={cls._config("AUTH_COOKIE_PATH")})',
         )
 
     @classmethod

@@ -13,6 +13,6 @@ class UserView(AtomicMixin, ModelViewSet):
     Представление пользователя.
     """
 
-    queryset = CustomUser.objects.all()
+    queryset = CustomUser.objects.all().order_by('-created_at')
     serializer_class = UserSerializer
     permission_classes = [IsOwnerOrAdmin]
