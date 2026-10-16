@@ -3,8 +3,6 @@ from pathlib import Path
 
 import environ
 
-from settings.logging_config import LOGGING
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
@@ -73,7 +71,6 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# LOGGING = configure_logging(DEBUG)
 
 MAILERS = {
     'default': {
