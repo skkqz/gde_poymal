@@ -17,6 +17,7 @@ from apps.authentication.api.serializers import (
     RegisterSerializer,
 )
 from apps.authentication.services.change_password_service import PasswordService
+from apps.authentication.services.email_verification_service import EmailVerificationService
 from apps.authentication.services.jwt_service import JWTService
 from apps.authentication.services.refresh_cookie_service import RefreshCookieService
 from apps.users.api.serializers import UserSerializer
@@ -87,6 +88,14 @@ class RegisterView(AtomicMixin, GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
+
+        try:
+            verification_token = EmailVerificationService.create_token(user)
+            EmailVerificationService.send_verification_email(user, verification_token)
+        except Exception as exc:
+            logger.warning(
+                f'Письмо подтверждения не отправлено: id={user.pk} ошибка={exc}',
+            )
 
         logger.info(
             f'Зарегистрирован новый пользователь: id={user.pk} email={user.email}',
@@ -321,5 +330,68 @@ class PasswordChangeView(AtomicMixin, GenericAPIView):
         logger.info(
             f'Пользователь сменил пароль: id={request.user.pk} email={request.user.email}',
         )
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class VerifyEmailView(APIView):
+    """
+    Представление подтверждения почты по токену из письма.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @schemas.verify_email_schema
+    def get(self, request, *args, **kwargs):
+        """
+        Подтвердить email по токену из query-string.
+
+        :param request: HTTP запрос.
+        :return: Данные пользователя с подтверждённым email.
+        """
+
+        token = request.query_params.get('token')
+
+        if not token:
+            return Response(
+                {'detail': 'Токен не предоставлен.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            user = EmailVerificationService.verify_token(token)
+        except ValueError as exc:
+            return Response(
+                {'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+
+
+class ResendVerificationEmailView(GenericAPIView):
+    """
+    Представление повторная отправка письма подтверждения почты.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @schemas.resend_verification_schema
+    def post(self, request, *args, **kwargs):
+        """
+        Отправить новое письмо подтверждения.
+
+        :param request: HTTP запрос.
+        :return: Пустой ответ 200.
+        """
+
+        if request.user.is_email_verified:
+            return Response(
+                {'detail': 'Email уже подтверждён.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        EmailVerificationService.resend_verification(request.user)
 
         return Response(status=status.HTTP_200_OK)

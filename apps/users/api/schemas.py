@@ -12,17 +12,17 @@ user_schemas = extend_schema_view(
     list=extend_schema(
         summary='Список пользователей',
         description='Возвращает список пользователей с пагинацией '
-                    '(PageNumberPagination, 20 на страницу). Временный эндпоинт, '
-                    'будет заменён поиском.',
+        '(PageNumberPagination, 20 на страницу). Временный эндпоинт, '
+        'будет заменён поиском.',
         tags=['users'],
     ),
     partial_update=extend_schema(
         summary='Обновить пользователя',
         description='Частичное обновление профиля. PUT отключён. '
-                    'Обновляемые поля: first_name, last_name, birth_date, avatar. '
-                    'Email — только для чтения. '
-                    'Скалярные поля — JSON, аватар — multipart/form-data. '
-                    'Изменять можно только свой профиль (или админу).',
+        'Обновляемые поля: first_name, last_name, birth_date, avatar. '
+        'Email — только для чтения. '
+        'Скалярные поля — JSON, аватар — multipart/form-data. '
+        'Изменять можно только свой профиль (или админу).',
         tags=['users'],
         request=UserSerializer,
         responses={
@@ -33,8 +33,7 @@ user_schemas = extend_schema_view(
     ),
     destroy=extend_schema(
         summary='Удалить пользователя',
-        description='Удаляет пользователя по UUID вместе с файлом аватара. '
-                    'Удалять можно только себя (или админу).',
+        description='Удаляет пользователя по UUID вместе с файлом аватара. Удалять можно только себя (или админу).',
         tags=['users'],
         responses={
             204: OpenApiResponse(description='Пользователь удалён'),

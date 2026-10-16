@@ -1,4 +1,4 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer
+from drf_spectacular.utils import OpenApiResponse, extend_schema, inline_serializer, OpenApiParameter
 from rest_framework import serializers as drf_serializers
 
 from apps.authentication.api import serializers
@@ -66,13 +66,46 @@ logout_schema = extend_schema(
 password_change = extend_schema(
     request=serializers.PasswordChangeSerializer,
     responses={
-        200: OpenApiResponse(description='Пароль изменён, все ранее выданные '
-                                       'refresh-токены отозваны'),
+        200: OpenApiResponse(description='Пароль изменён, все ранее выданные refresh-токены отозваны'),
         400: OpenApiResponse(description='Ошибка валидации'),
     },
     description='Смена пароля пользователя. После успешной смены все ранее '
-                'выпущенные refresh-токены пользователя попадают в blacklist '
-                'и перестают работать. Требует JWT.',
+    'выпущенные refresh-токены пользователя попадают в blacklist '
+    'и перестают работать. Требует JWT.',
     summary='Смена пароля пользователя.',
+    tags=['auth'],
+)
+
+verify_email_schema = extend_schema(
+    request=None,
+    parameters=[
+        OpenApiParameter(
+            name='token',
+            type=str,
+            location=OpenApiParameter.QUERY,
+            required=True,
+            description='Токен подтверждения из письма',
+        ),
+    ],
+    responses={
+        200: UserSerializer,
+        400: OpenApiResponse(
+            description='Токен не предоставлен, невалиден, истёк или уже использован',
+        ),
+    },
+    description='Подтверждение email по токену из письма.',
+    summary='Подтверждение email',
+    tags=['auth'],
+)
+
+resend_verification_schema = extend_schema(
+    request=None,
+    responses={
+        200: OpenApiResponse(description='Письмо отправлено'),
+        400: OpenApiResponse(description='Email уже подтверждён'),
+    },
+    description='Повторная отправка письма подтверждения email. Требует JWT. '
+                'Инвалидирует предыдущий токен и отправляет новый.',
+    summary='Повторная отправка письма подтверждения',
     tags=['auth'],
 )

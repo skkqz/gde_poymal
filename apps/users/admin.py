@@ -13,14 +13,20 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = (
         (None, {'fields': ('email', 'password')}),
         ('Персональные данные', {'fields': ('first_name', 'last_name', 'birth_date', 'avatar')}),
-        ('Права', {
-            'fields': ('is_active', 'is_staff', 'is_email_verified', 'is_superuser', 'groups', 'user_permissions'),
-        }),
+        (
+            'Права',
+            {
+                'fields': ('is_active', 'is_staff', 'is_email_verified', 'is_superuser', 'groups', 'user_permissions'),
+            },
+        ),
         ('Даты', {'fields': ('last_login', 'created_at', 'updated_at')}),
     )
     add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('email', 'password1', 'password2'),
-        }),
+        (
+            None,
+            {
+                'classes': ('wide',),
+                'fields': ('email', 'password1', 'password2'),
+            },
+        ),
     )

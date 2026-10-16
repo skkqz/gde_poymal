@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from .base import env
+from settings.base import env
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env.int('ACCESS_TOKEN_LIFETIME_MIN', default=15)),
