@@ -25,4 +25,6 @@ urlpatterns = [
         name='logout',
     ),
     path('password/change/', views.PasswordChangeView.as_view(), name='password_change'),
+    path('verify-email/', views.VerifyEmailView.as_view(), name='verify-email'),
+    path('resend-verification/', views.ResendVerificationEmailView.as_view(), name='resend-verification'),
 ]
