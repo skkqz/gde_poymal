@@ -174,3 +174,58 @@ class PasswordChangeSerializer(serializers.Serializer):
             raise serializers.ValidationError('Новые пароли не совпадают.')
 
         return attrs
+
+
+class RequestPasswordResetSerializer(serializers.Serializer):
+    """
+    Сериализатор запроса восстановления пароля.
+    """
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value: str) -> str:
+        """
+        Нормализовать email.
+
+        :param value: Email из запроса.
+        :return: Email в нижнем регистре.
+        """
+
+        return value.strip().lower()
+
+
+class ConfirmPasswordResetSerializer(serializers.Serializer):
+    """
+    Сериализатор подтверждения восстановления пароля.
+    """
+
+    token = serializers.CharField(max_length=64)
+    new_password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    new_password2 = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    def validate_new_password(self, value: str) -> str:
+        """
+        Проверить новый пароль согласно настройкам Django.
+
+        :param value: Новый пароль.
+        :return: Проверенный новый пароль.
+        """
+
+        from django.contrib.auth.password_validation import validate_password
+
+        validate_password(value)
+
+        return value
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        """
+        Проверить совпадение новых паролей.
+
+        :param attrs: Валидированные поля.
+        :return: Валидированные данные.
+        """
+
+        if attrs['new_password'] != attrs['new_password2']:
+            raise serializers.ValidationError('Новые пароли не совпадают.')
+
+        return attrs

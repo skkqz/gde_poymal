@@ -12,15 +12,19 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.authentication.api import schemas
 from apps.authentication.api.serializers import (
+    ConfirmPasswordResetSerializer,
     LoginSerializer,
     PasswordChangeSerializer,
     RegisterSerializer,
+    RequestPasswordResetSerializer,
 )
 from apps.authentication.services.change_password_service import PasswordService
 from apps.authentication.services.email_verification_service import EmailVerificationService
 from apps.authentication.services.jwt_service import JWTService
+from apps.authentication.services.password_reset_service import PasswordResetService
 from apps.authentication.services.refresh_cookie_service import RefreshCookieService
 from apps.users.api.serializers import UserSerializer
+from apps.users.models import CustomUser
 from core.mixins import AtomicMixin, CsrfProtectMixin
 
 
@@ -393,5 +397,78 @@ class ResendVerificationEmailView(GenericAPIView):
             )
 
         EmailVerificationService.resend_verification(request.user)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class RequestPasswordResetView(APIView):
+    """
+    Запрос восстановления пароля.
+
+    Отправляет письмо с токеном на email пользователя.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @schemas.request_password_reset_schema
+    def post(self, request, *args, **kwargs):
+        """
+        Запросить сброс пароля.
+
+        :param request: HTTP запрос.
+        :return: Пустой ответ 200 (не раскрываем, существует ли email).
+        """
+
+        serializer = RequestPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data['email']
+
+        try:
+            user = CustomUser.objects.get(email=email)
+        except CustomUser.DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
+
+        if not PasswordResetService.can_request_reset(user):
+            return Response(status=status.HTTP_200_OK)
+
+        token = PasswordResetService.create_reset_token(user)
+        PasswordResetService.send_reset_email(user, token)
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class ConfirmPasswordResetView(APIView):
+    """
+    Подтверждение восстановления пароля.
+
+    Принимает токен из письма и новый пароль.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+
+    @schemas.confirm_password_reset_schema
+    def post(self, request, *args, **kwargs):
+        """
+        Установить новый пароль.
+
+        :param request: HTTP запрос.
+        :return: Пустой ответ 200.
+        """
+
+        serializer = ConfirmPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            PasswordResetService.reset_password(
+                serializer.validated_data['token'],
+                serializer.validated_data['new_password'],
+            )
+        except ValueError as exc:
+            return Response(
+                {'detail': str(exc)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         return Response(status=status.HTTP_200_OK)

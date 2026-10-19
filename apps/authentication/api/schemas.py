@@ -109,3 +109,27 @@ resend_verification_schema = extend_schema(
     summary='Повторная отправка письма подтверждения',
     tags=['auth'],
 )
+
+request_password_reset_schema = extend_schema(
+    request=serializers.RequestPasswordResetSerializer,
+    responses={
+        200: OpenApiResponse(description='Письмо отправлено'),
+    },
+    description='Запрос восстановления пароля. Ототправляет письмо с токеном '
+                'на email пользователя. Не раскрывает, существует ли email. '
+                'Rate-limit: 1 раз в 10 минут.',
+    summary='Запрос восстановления пароля',
+    tags=['auth'],
+)
+
+confirm_password_reset_schema = extend_schema(
+    request=serializers.ConfirmPasswordResetSerializer,
+    responses={
+        200: OpenApiResponse(description='Пароль изменён'),
+        400: OpenApiResponse(description='Ошибка валидации или невалидный токен'),
+    },
+    description='Установка нового пароля по токену из письма. После успеха '
+                'все ранее выданные refresh-токены отзываются.',
+    summary='Подтверждение восстановления пароля',
+    tags=['auth'],
+)
