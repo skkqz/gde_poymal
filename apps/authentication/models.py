@@ -45,3 +45,28 @@ class EmailVerificationToken(BaseModel):
         """
 
         return f'{self.token[:16]}... ({self.user.email})'
+
+
+class PasswordResetToken(BaseModel):
+    """
+    Токен восстановления пароля.
+
+    Создаётся при запросе сброса пароля.
+    Используется один раз, срок жизни — 1 час.
+    """
+
+    user = models.ForeignKey(
+        'users.CustomUser',
+        on_delete=models.CASCADE,
+        related_name='password_reset_tokens',
+        verbose_name='Пользователь',
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True, verbose_name='Токен')
+    expires_at = models.DateTimeField(verbose_name='Дата истечения')
+    used = models.BooleanField(default=False, verbose_name='Использован')
+
+    class Meta:
+        db_table = '"s_accounts"."t_password_reset_tokens"'
+        verbose_name = 'Токен восстановления пароля'
+        verbose_name_plural = 'Токены восстановления пароля'
+        ordering = ('-created_at',)
