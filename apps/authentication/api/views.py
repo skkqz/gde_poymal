@@ -18,6 +18,7 @@ from apps.authentication.api.serializers import (
     RegisterSerializer,
     RequestPasswordResetSerializer,
 )
+from apps.authentication.services.access_cookie_service import AccessCookieService
 from apps.authentication.services.change_password_service import PasswordService
 from apps.authentication.services.email_verification_service import EmailVerificationService
 from apps.authentication.services.jwt_service import JWTService
@@ -112,10 +113,8 @@ class LoginView(GenericAPIView):
     """
     Представление авторизации пользователя.
 
-    Access-токен возвращается в теле ответа, refresh-токен
-    устанавливается в HttpOnly cookie. CSRF отключён по той же
-    причине, что и в регистрации: пользователь ещё не имеет
-    cookie-аутентификации, защищать нечего.
+    Access- и refresh-токены устанавливаются в HttpOnly cookie.
+    В теле возвращаются данные пользователя.
     """
 
     permission_classes = [AllowAny]
@@ -129,7 +128,7 @@ class LoginView(GenericAPIView):
         :param request: HTTP запрос.
         :param args: Позиционные аргументы.
         :param kwargs: Именованные аргументы.
-        :return: Access-токен и данные пользователя.
+        :return: Данные пользователя.
         """
 
         serializer = self.get_serializer(
@@ -143,12 +142,12 @@ class LoginView(GenericAPIView):
 
         response = Response(
             {
-                'access': str(refresh.access_token),
-                'user': UserSerializer(user).data,
+                'user': UserSerializer(user, context={'request': request}).data,
             },
             status=status.HTTP_200_OK,
         )
 
+        AccessCookieService.set(response, str(refresh.access_token))
         RefreshCookieService.set(response, str(refresh))
 
         logger.info(
@@ -158,13 +157,42 @@ class LoginView(GenericAPIView):
         return response
 
 
+class SessionView(APIView):
+    """
+    Представление текущего пользователя по access-токену из HttpOnly cookie.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    @schemas.session_schema
+    def get(self, request, *args, **kwargs):
+        """
+        Вернуть текущего пользователя.
+
+        :param request: HTTP запрос.
+        :param args: Позиционные аргументы.
+        :param kwargs: Именованные аргументы.
+        :return: Данные пользователя.
+        """
+
+        return Response(
+            {
+                'user': UserSerializer(
+                    request.user,
+                    context={'request': request},
+                ).data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
 class CookieTokenRefreshView(CsrfProtectMixin, GenericAPIView):
     """
     Обновление access-токена.
 
     Refresh-токен читается из HttpOnly cookie, новый access
-    возвращается в теле ответа. При включённой ротации refresh-токен
-    также переустанавливается в cookie.
+    возвращается в теле ответа и устанавливается в session cookie.
+    При включённой ротации refresh-токен также переустанавливается в cookie.
 
     Защита CSRF обязательна: refresh происходит по cookie без
     Authorization-заголовка, поэтому запрос неотличим от
@@ -235,6 +263,10 @@ class CookieTokenRefreshView(CsrfProtectMixin, GenericAPIView):
 
         response = Response({'access': new_access}, status=status.HTTP_200_OK)
 
+        if new_access:
+            AccessCookieService.set(response, new_access)
+
+
         # При ROTATE_REFRESH_TOKENS=True simplejwt вернёт новый refresh
         if new_refresh:
             RefreshCookieService.set(response, new_refresh)
@@ -294,6 +326,7 @@ class LogoutView(CsrfProtectMixin, GenericAPIView):
             )
 
         response = Response(status=status.HTTP_204_NO_CONTENT)
+        AccessCookieService.delete(response)
         RefreshCookieService.delete(response)
         return response
 

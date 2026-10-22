@@ -1,5 +1,4 @@
 from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, inline_serializer
-from rest_framework import serializers as drf_serializers
 
 from apps.authentication.api import serializers
 from apps.users.api.serializers import UserSerializer
@@ -29,17 +28,29 @@ login_schema = extend_schema(
         200: inline_serializer(
             name='LoginResponse',
             fields={
-                'access': drf_serializers.CharField(
-                    help_text='Access-токен, хранить в памяти клиента',
-                ),
                 'user': UserSerializer(),
             },
         )
     },
-    description='Авторизация по email и паролю. Access-токен и данные пользователя '
-    'возвращаются в теле ответа, refresh-токен устанавливается '
-    'в HttpOnly cookie.',
+    description='Авторизация по email и паролю. Access- и refresh-токены '
+    'устанавливаются в HttpOnly cookie, в теле возвращаются данные пользователя.',
     summary='Вход',
+    tags=['auth'],
+)
+
+session_schema = extend_schema(
+    request=None,
+    responses={
+        200: inline_serializer(
+            name='SessionResponse',
+            fields={
+                'user': UserSerializer(),
+            },
+        ),
+        401: OpenApiResponse(description='Нет валидного access-токена'),
+    },
+    description='Возвращает текущего пользователя по access-токену из HttpOnly cookie.',
+    summary='Текущий пользователь',
     tags=['auth'],
 )
 

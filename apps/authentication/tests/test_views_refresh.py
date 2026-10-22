@@ -2,7 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.users.models import CustomUser
 
@@ -31,8 +31,29 @@ class CookieTokenRefreshViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('access', response.data)
         self.assertNotIn('refresh', response.data)
+        self.assertIn('access_token', response.cookies)
         self.assertIn(self.cookie_name, response.cookies)
+        self.assertEqual(response.cookies['access_token'].value, response.data['access'])
         self.assertNotEqual(response.cookies[self.cookie_name].value, str(self.refresh))
+
+    def test_refresh_sets_httponly_access_cookie(self):
+        """
+        Access-cookie должна быть HttpOnly и session-cookie.
+        """
+
+        self.client.cookies[self.cookie_name] = str(self.refresh)
+
+        response = self.client.post(reverse('token-refresh'), format='json')
+
+        self.assertIn('access_token', response.cookies)
+        cookie = response.cookies['access_token']
+        self.assertTrue(cookie['httponly'])
+        self.assertEqual(cookie['path'], '/api/')
+        self.assertFalse(cookie.get('max-age'))
+        self.assertFalse(cookie.get('expires'))
+
+        token = AccessToken(cookie.value)
+        self.assertEqual(str(token['user_id']), str(self.user.pk))
 
     def test_refresh_rotates_and_blacklists_old_token(self):
         """

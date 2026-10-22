@@ -170,7 +170,9 @@ class PasswordChangeViewTest(APITestCase):
             format='json',
         )
         self.assertEqual(login_new.status_code, status.HTTP_200_OK)
-        self.assertIn('access', login_new.data)
+        self.assertIn('user', login_new.data)
+        self.assertNotIn('access', login_new.data)
+        self.assertIn('access_token', login_new.cookies)
 
         login_old = self.client.post(
             reverse('login'),

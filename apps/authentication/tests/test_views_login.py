@@ -1,7 +1,7 @@
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
 
 from apps.users.models import CustomUser
 
@@ -9,7 +9,8 @@ from apps.users.models import CustomUser
 class LoginViewTest(APITestCase):
     """Тесты LoginView."""
 
-    cookie_name = 'refresh_token'
+    access_cookie_name = 'access_token'
+    refresh_cookie_name = 'refresh_token'
 
     def setUp(self):
         self.user = CustomUser.objects.create_user(
@@ -19,7 +20,7 @@ class LoginViewTest(APITestCase):
 
     def test_login_200(self):
         """
-        Успешный вход: access в теле ответа, refresh только в cookie.
+        Успешный вход: токены только в cookie, в теле — пользователь.
         """
 
         data = {
@@ -28,9 +29,34 @@ class LoginViewTest(APITestCase):
         }
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertNotIn('access', response.data)
         self.assertIn('user', response.data)
         self.assertNotIn('refresh', response.data)
+        self.assertEqual(response.data['user']['email'], self.user.email)
+
+    def test_login_sets_httponly_access_cookie(self):
+        """
+        Access-токен должен устанавливаться в session HttpOnly cookie.
+        """
+
+        data = {
+            'email': 'test@example.com',
+            'password': 'StrongPass123',
+        }
+        response = self.client.post(reverse('login'), data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(self.access_cookie_name, response.cookies)
+
+        cookie = response.cookies[self.access_cookie_name]
+        self.assertTrue(cookie['httponly'])
+        self.assertEqual(cookie['path'], '/api/')
+        self.assertEqual(cookie['samesite'], 'Lax')
+        self.assertFalse(cookie.get('max-age'))
+        self.assertFalse(cookie.get('expires'))
+
+        token = AccessToken(cookie.value)
+        self.assertEqual(str(token['user_id']), str(self.user.pk))
 
     def test_login_sets_httponly_refresh_cookie(self):
         """
@@ -44,14 +70,13 @@ class LoginViewTest(APITestCase):
         response = self.client.post(reverse('login'), data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn(self.cookie_name, response.cookies)
+        self.assertIn(self.refresh_cookie_name, response.cookies)
 
-        cookie = response.cookies[self.cookie_name]
+        cookie = response.cookies[self.refresh_cookie_name]
         self.assertTrue(cookie['httponly'])
         self.assertEqual(cookie['path'], '/api/auth/')
         self.assertEqual(cookie['samesite'], 'Lax')
 
-        # Значение cookie должно быть валидным refresh-токеном этого пользователя.
         token = RefreshToken(cookie.value)
         self.assertEqual(str(token['user_id']), str(self.user.pk))
 
@@ -91,4 +116,4 @@ class LoginViewTest(APITestCase):
         }
         response = self.client.post(reverse('login'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn('access', response.data)
+        self.assertEqual(response.data['user']['email'], 'test@example.com')
