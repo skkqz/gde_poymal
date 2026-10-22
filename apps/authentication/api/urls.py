@@ -18,6 +18,11 @@ urlpatterns = [
         views.LoginView.as_view(),
         name='login',
     ),
+    path(
+        'session/',
+        views.SessionView.as_view(),
+        name='session',
+    ),
     path('refresh/', views.CookieTokenRefreshView.as_view(), name='token-refresh'),
     path(
         'logout/',

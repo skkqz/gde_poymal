@@ -10,6 +10,8 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     # Настройки Cookie
     'AUTH_COOKIE': 'refresh_token',  # имя cookie для refresh
+    'AUTH_ACCESS_COOKIE': 'access_token',
+    'AUTH_ACCESS_COOKIE_PATH': '/api/',
     'AUTH_COOKIE_SECURE': not env.bool('DEBUG', default=False),  # True в проде
     'AUTH_COOKIE_HTTP_ONLY': True,  # JS не может прочитать
     'AUTH_COOKIE_SAMESITE': 'Lax',  # защита от CSRF

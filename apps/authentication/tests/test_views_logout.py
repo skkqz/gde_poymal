@@ -23,9 +23,10 @@ class LogoutViewTest(APITestCase):
 
     def test_logout_204(self):
         """
-        Успешный выход: cookie удаляется с клиента.
+        Успешный выход: обе cookie удаляются с клиента.
         """
 
+        self.client.cookies['access_token'] = self.access
         self.client.cookies[self.cookie_name] = str(self.refresh)
 
         response = self.client.post(reverse('logout'), format='json')
@@ -34,6 +35,22 @@ class LogoutViewTest(APITestCase):
         self.assertEqual(response.cookies[self.cookie_name].value, '')
         self.assertEqual(response.cookies[self.cookie_name]['max-age'], 0)
         self.assertEqual(response.cookies[self.cookie_name]['path'], '/api/auth/')
+        self.assertEqual(response.cookies['access_token'].value, '')
+        self.assertEqual(response.cookies['access_token']['max-age'], 0)
+        self.assertEqual(response.cookies['access_token']['path'], '/api/')
+
+    def test_logout_with_access_cookie_204(self):
+        """
+        Logout должен работать по access-cookie без Bearer-заголовка.
+        """
+
+        self.client.credentials()
+        self.client.cookies['access_token'] = self.access
+        self.client.cookies[self.cookie_name] = str(self.refresh)
+
+        response = self.client.post(reverse('logout'), format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_logout_blacklists_refresh_token(self):
         """
