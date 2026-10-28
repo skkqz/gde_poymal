@@ -64,15 +64,14 @@ class CsrfTokenView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class RegisterView(AtomicMixin, GenericAPIView):
+class RegisterView(CsrfProtectMixin, AtomicMixin, GenericAPIView):
     """
     Представление регистрации нового пользователя.
 
-    CSRF здесь намеренно отключён (и так по умолчанию в DRF):
-    пользователь ещё не аутентифицирован, cookie-сессии нет,
-    а CSRF-cookie может отсутствовать на момент первого запроса.
-    Защищать от CSRF нечего — у жертвы нет cookie, которую можно
-    было бы использовать в межсайтовой атаке.
+    CSRF обязателен: без него сторонний сайт может заставить браузер
+    жертвы создать аккаунт и войти в него (login CSRF), а также
+    организовать массовые регистрации. Клиент сначала получает
+    csrftoken через /api/auth/csrf/ и передаёт его в X-CSRFToken.
     """
 
     permission_classes = [AllowAny]
@@ -109,12 +108,15 @@ class RegisterView(AtomicMixin, GenericAPIView):
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
 
 
-class LoginView(GenericAPIView):
+class LoginView(CsrfProtectMixin, GenericAPIView):
     """
     Представление авторизации пользователя.
 
     Access- и refresh-токены устанавливаются в HttpOnly cookie.
     В теле возвращаются данные пользователя.
+
+    CSRF обязателен: иначе сторонний сайт может выполнить login CSRF
+    и подменить сессию жертвы.
     """
 
     permission_classes = [AllowAny]
@@ -335,11 +337,9 @@ class PasswordChangeView(AtomicMixin, GenericAPIView):
     """
     Представление смены пароля.
 
-    CSRF не требуется: аутентификация идёт по Authorization-заголовку
-    (JWT), а не по cookie. Сторонний сайт не может подставить чужой
-    Bearer-токен, потому что не имеет к нему доступа. Если когда-нибудь
-    в DEFAULT_AUTHENTICATION_CLASSES появится SessionAuthentication —
-    оберни view в CsrfProtectMixin.
+    CSRF проверяется в CookieJWTAuthentication только для запросов,
+    аутентифицированных access-cookie. Запросы с Authorization: Bearer
+    CSRF не требуют, поэтому CsrfProtectMixin здесь не используется.
     """
 
     permission_classes = [IsAuthenticated]
