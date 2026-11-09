@@ -88,6 +88,7 @@ class LoginSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    remember = serializers.BooleanField(default=False, required=False)
 
     def validate(self, attrs: dict) -> dict:
         """
@@ -116,12 +117,20 @@ class LoginSerializer(serializers.Serializer):
 
 class AccessTokenResponse(serializers.Serializer):
     """
-    Ответ с access-токеном.
+    Сериализатор ответа с access-токеном.
 
     Refresh-токен в теле не возвращается: он живёт в HttpOnly cookie.
     """
 
     access = serializers.CharField(help_text='Access-токен, хранить в памяти клиента')
+
+
+class RefreshRequestSerializer(serializers.Serializer):
+    """
+    Сериализатор входа для обновления access-токена.
+    """
+
+    remember = serializers.BooleanField(default=False, required=False)
 
 
 class PasswordChangeSerializer(serializers.Serializer):

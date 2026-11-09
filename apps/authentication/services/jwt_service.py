@@ -75,3 +75,24 @@ class JWTService:
         )
 
         return revoked
+
+    @staticmethod
+    def revoke_refresh_token_on_logout(user: CustomUser, refresh_token: str) -> None:
+        """
+        Инвалидировать refresh-токен при logout.
+
+        Если токен уже использован, просрочен или в блэклисте — не блокируем,
+        просто логируем. Это соответствует контракту: logout всегда возвращает
+        204, даже если refresh-токен уже недействителен.
+
+        :param user: Пользователь.
+        :param refresh_token: Refresh-токен для инвалидации.
+        """
+
+        try:
+            JWTService.blacklist_refresh_token(user=user, refresh_token=refresh_token)
+        except ValidationError:
+            logger.info(
+                f'Logout: refresh-токен пользователя id={user.pk} '
+                f'уже недействителен, игнорируем ошибку.',
+            )
