@@ -139,6 +139,7 @@ class LoginView(CsrfProtectMixin, GenericAPIView):
         )
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user']
+        remember = serializer.validated_data.get('remember', False)
 
         refresh = RefreshToken.for_user(user)
 
@@ -150,7 +151,7 @@ class LoginView(CsrfProtectMixin, GenericAPIView):
         )
 
         AccessCookieService.set(response, str(refresh.access_token))
-        RefreshCookieService.set(response, str(refresh))
+        RefreshCookieService.set(response, str(refresh), remember=remember)
 
         logger.info(
             f'Пользователь авторизован: id={user.pk} email={user.email} ip={request.META.get("REMOTE_ADDR")}',
@@ -261,20 +262,17 @@ class CookieTokenRefreshView(CsrfProtectMixin, GenericAPIView):
             raise InvalidToken(str(exc)) from exc
 
         new_access = serializer.validated_data.get('access')
-        new_refresh = serializer.validated_data.get('refresh')
 
-        response = Response({'access': new_access}, status=status.HTTP_200_OK)
+        # Важно: ротация refresh отключена (ROTATE_REFRESH_TOKENS=False),
+        # поэтому refresh не перевыпускает новый refresh-cookie и не меняет
+        # refresh-token. Refresh только подтверждает сессию и отдаёт новый access.
+        response = Response(status=status.HTTP_204_NO_CONTENT)
 
         if new_access:
             AccessCookieService.set(response, new_access)
 
-
-        # При ROTATE_REFRESH_TOKENS=True simplejwt вернёт новый refresh
-        if new_refresh:
-            RefreshCookieService.set(response, new_refresh)
-
         logger.debug(
-            f'Access-токен обновлён (ротация refresh={bool(new_refresh)})',
+            f'Access-токен обновлён, refresh-ротация отключена (remember={serializer.validated_data.get("remember")})',
         )
 
         return response
@@ -308,19 +306,19 @@ class LogoutView(CsrfProtectMixin, GenericAPIView):
 
         if refresh_token:
             try:
-                JWTService.blacklist_refresh_token(
+                JWTService.revoke_refresh_token_on_logout(
                     user=request.user,
                     refresh_token=refresh_token,
                 )
                 logger.info(
                     f'Пользователь вышел из системы: id={request.user.pk} email={request.user.email}',
                 )
-            except ValidationError as exc:
+            except ValidationError:
                 # Токен уже использован, просрочен или в блэклисте.
                 # Пользователь всё равно должен выйти — не блокируем.
                 logger.info(
                     f'Выход из системы: refresh-токен пользователя '
-                    f'id={request.user.pk} уже недействителен ({exc.detail})',
+                    f'id={request.user.pk} уже недействителен, выход продолжен',
                 )
         else:
             logger.warning(

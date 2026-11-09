@@ -121,3 +121,36 @@ class LogoutViewTest(APITestCase):
         response = self.client.post(reverse('logout'), format='json')
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_logout_remember_false(self):
+        """
+        При remember=false refresh-cookie удаляется после logout.
+        """
+
+        self.client.cookies[self.cookie_name] = str(self.refresh)
+
+        response = self.client.post(
+            reverse('logout'),
+            format='json',
+            data={'remember': False},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(response.cookies[self.cookie_name].get('max-age'))
+
+    def test_logout_remember_true(self):
+        """
+        При remember=true в query хедере refresh-cookie удаляется с
+        lifetime=0, logout всегда делает session cookie.
+        """
+
+        self.client.cookies[self.cookie_name] = str(self.refresh)
+
+        response = self.client.post(
+            reverse('logout'),
+            format='json',
+            data={'remember': True},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(response.cookies[self.cookie_name].get('max-age'))

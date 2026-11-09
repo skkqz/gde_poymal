@@ -56,7 +56,7 @@ session_schema = extend_schema(
 
 refresh_schema = extend_schema(
     request=None,
-    responses={200: serializers.AccessTokenResponse},
+    responses={204: OpenApiResponse(description='Access-токен обновлён. Refresh-cookie не перевыпускается.')},
     description='Обновление access-токена. Refresh-токен читается из HttpOnly cookie, '
     'тело запроса не требуется. При включённой ротации новый refresh-токен '
     'возвращается в обновлённой cookie. Требует заголовок X-CSRFToken.',
